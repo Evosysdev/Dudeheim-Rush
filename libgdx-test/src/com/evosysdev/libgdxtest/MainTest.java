@@ -18,13 +18,20 @@ public class MainTest extends Game implements ApplicationListener {
 	
 	private FPSLogger fps;
 	private MainScreen screen;
+	private int size;
 	
+	public MainTest(int size)
+	{
+		super();
+		
+		this.size = size;
+	}
 	
 	@Override
 	public void create() {
 		
 		fps = new FPSLogger();
-		screen = new MainScreen();
+		screen = new MainScreen(size);
 		setScreen(screen);
 	}
 

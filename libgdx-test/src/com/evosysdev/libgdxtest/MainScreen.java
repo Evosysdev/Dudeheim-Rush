@@ -9,6 +9,7 @@ import aurelienribon.tweenengine.equations.Bounce;
 import aurelienribon.tweenengine.equations.Circ;
 import aurelienribon.tweenengine.equations.Elastic;
 import aurelienribon.tweenengine.equations.Linear;
+import box2dLight.RayHandler;
 
 import com.badlogic.gdx.Audio;
 import com.badlogic.gdx.Gdx;
@@ -63,13 +64,24 @@ public class MainScreen implements Screen
 	private int height = Gdx.graphics.getHeight();
 	private float theta;
 	private float time;
+	private float elapsed;
+	private float nextBounce;
+	private int size;
 	
-	public static final float WORLD_TO_BOX = 0.01f;
-	public static final float BOX_TO_WORLD = 100;
+	public static final float BASE_SIZE = 32;
 	
-	public MainScreen()
+	public static float WORLD_TO_BOX = 0.01f;
+	public static float BOX_TO_WORLD = 100;
+	
+	public MainScreen(int size)
 	{
-		world = new World(new Vector2(0.0f, 0.0f), true);
+		this.size = size;
+		
+		float scale = size / BASE_SIZE;
+		WORLD_TO_BOX /= scale;
+		BOX_TO_WORLD *= scale;
+		
+		world = new World(new Vector2(0.0f, -9.8f), true);
 		
 		debugRenderer = new Box2DDebugRenderer();
 		
@@ -98,7 +110,8 @@ public class MainScreen implements Screen
 		
 		theta = 0;
 		
-		time = 0;
+		time = elapsed = 0;
+		nextBounce = 1;
 		
 		dudes = new ArrayList<Dudeheim>();
 		
@@ -123,16 +136,16 @@ public class MainScreen implements Screen
 
 		ChainShape border = new ChainShape();  
 		border.createLoop(vecs);
-		groundBody.createFixture(border, 0.0f); 
+		groundBody.createFixture(border, 0.5f); 
 		border.dispose(); 
 	}
 	
 	private void addDudes()
 	{
-		for (int i = 0; i < 200; i++)
+		for (int i = 0; i < 100; i++)
 		{
 			Dudeheim heim = new Dudeheim(new Vector2((float)Math.floor(Math.random() * (Gdx.graphics.getWidth() - 50) + 25),
-					  (float)Math.floor(Math.random() * (Gdx.graphics.getHeight() - 50) + 25)), 32);
+					  (float)Math.floor(Math.random() * (Gdx.graphics.getHeight() - 50) + 25)), size);
 			
 			dudes.add(heim);
 			heim.createBody(world);
@@ -149,9 +162,14 @@ public class MainScreen implements Screen
 		
 		camera.update();
 		
+		elapsed += delta;
 		
 		for (Dudeheim dude : dudes)
 		{
+			if (elapsed > nextBounce)
+			{
+				dude.bounce();
+			}
 			dude.update();
 			
 			if (dude.getX() < 0)
@@ -168,10 +186,16 @@ public class MainScreen implements Screen
 			font.setColor(0, 0, 0, 1);
 			font.setScale(3);
 			font.draw(sprites, Integer.toString(dudes.size()), 50, 50);
-			sprites.draw(dudeheimTex, dude.getX() - 4, dude.getY() - 4, 4, 4, 8, 8, 4, 4,
+			sprites.draw(dudeheimTex, dude.getX() - 4, dude.getY() - 4, 4, 4, 8, 8, size / 8.0f, size / 8.0f,
 					(float)Math.toDegrees(dude.getBody().getAngle()), 0, 0, 8, 8, false, false);
 			sprites.end();
 			
+		}
+		
+		if (elapsed > nextBounce)
+		{
+			elapsed = 0;
+			nextBounce = (float)Math.random() * 2.0f + 0.5f;
 		}
 		
 		if (Gdx.input.isButtonPressed(Buttons.LEFT))
@@ -210,9 +234,6 @@ public class MainScreen implements Screen
 				addDudes();
 			}
 		}
-		
-		
-		
 	}
 
 	@Override

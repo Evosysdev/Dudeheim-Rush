@@ -25,7 +25,6 @@ public class Dudeheim
 	
 	public void createBody(World world)
 	{
-		
 		BodyDef bodyDef = new BodyDef();
 		
 		bodyDef.type = BodyType.DynamicBody;
@@ -40,12 +39,9 @@ public class Dudeheim
 		fixture.shape = box;
 		fixture.density = 0.1f;
 		fixture.friction = 0.0f;
-		fixture.restitution = 1.5f;
+		fixture.restitution = 0.6f;
 		
 		body.createFixture(fixture);
-		
-		body.setAwake(true);
-		body.applyForceToCenter((float)Math.random() * 100 - 50f, (float)Math.random() * 100 - 50f);
 		
 		box.dispose();
 	}
@@ -56,6 +52,11 @@ public class Dudeheim
 		bound.x = body.getPosition().x * MainScreen.BOX_TO_WORLD;
 		pos.y = body.getPosition().y * MainScreen.BOX_TO_WORLD;
 		bound.y = body.getPosition().y * MainScreen.BOX_TO_WORLD;
+	}
+	
+	public void bounce()
+	{
+		body.applyForceToCenter(0, 5);
 	}
 	
 	public Body getBody()
